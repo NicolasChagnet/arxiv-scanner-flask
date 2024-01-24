@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Daily arXiv digest</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    <script type="text/javascript">
+      window.onload = function() {
+        const watched_authors = {{ watched_authors|safe }};
+        const watched_kw = {{ watched_kw|safe }};
+        const links = document.querySelectorAll('.authors');
+
+        links.forEach(link => {
+          var text = link.innerHTML.toLowerCase();
+          var change = false;
+          watched_authors.forEach(ref => {
+            if (text.includes(ref.toLowerCase())) {
+              // console.log("Detecting " + ref)
+              change = true;
+            }
+          })
+          if (change === true) {
+            link.parentElement.parentElement.classList.add("watched")
+          }
+        })
+
+        const titles = document.querySelectorAll('.title');
+        const updated_string = "UPDATED".toLowerCase();
+        titles.forEach(title => {
+          var text = title.innerHTML.toLowerCase();
+          var change = false;
+          watched_kw.forEach(kw => {
+            if (text.includes(kw.toLowerCase())) {
+              change = true;
+            }
+          })
+          if (change === true) {
+            title.parentElement.classList.add("watched")
+          }
+          if (text.includes(updated_string)) {
+            title.parentElement.classList.add("updated")
+          }
+        })
+
+        // show_hide_duplicates()
+
+        var button_watched = document.getElementById('button_watched');
+        var button_updated = document.getElementById('button_updated');
+
+        button_watched.checked = false;
+        button_updated.checked = false;
+
+        function hide_elements(event) {
+          const els = document.querySelectorAll('li');
+          var unwatched_state = button_watched.checked
+          var updated_state   = button_updated.checked
+          els.forEach(link => {
+            var is_watched     = (link.classList.contains('watched'))
+            var is_not_updated = !(link.classList.contains('updated'))
+            if (updated_state) {
+              if (unwatched_state) {
+                truestate = (is_not_updated) && (is_watched)
+              } else {
+                truestate = (is_not_updated)
+              }
+            } else {
+              if (unwatched_state) {
+                truestate = (is_watched)
+              } else {
+                truestate = true
+              }
+            }
+            if (!truestate) {
+              link.style.display = 'none';
+            } else {
+              link.style.display = 'list-item';
+            }
+          })
+        }
+        button_watched.addEventListener('change', hide_elements)
+        button_updated.addEventListener('change', hide_elements)
+
+        button_watched.checked = true;
+        hide_elements();
+      }
+    </script>
+  </head>
+  <body>
+    <div class="topnav">
+      <a class="active" href="/">Home</a>
+      <a href="/show">Show parameters</a>
+      <a href="/add">Add parameters</a>
+      <div class="search-container">
+        <form action="/bydate">
+          <!-- <label for="archive">Archive: </label> -->
+          <input type="date" id="archive" name="date">
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+    <h1>arXiv's digest &mdash; {{ data["date"] }}</h1>
+    <strong>Total: </strong> {{data["number_articles"]}} articles <br />
+    Hide updated: <input type="checkbox" id="button_updated" /> &mdash; Hide others: <input type="checkbox" id="button_watched" />
+    {% for topic, content_topic in data["topics"].items() %}
+      <h2>{{topic}}</h2>
+      <ol type="1">
+        {% for item in content_topic %}
+          {% if (not item['duplicate']) %}
+            <li class="{{item['identifier']}}">
+              <small>(<a href="{{item['link_abs']}}">abs</a>, <a href="{{item['link_pdf']}}">pdf</a>)</small> <span>[{{item['identifier']}}]</span> <span class="title"> {{item['title']}} </span> 
+              <small>
+              {% for author in item["authors"] %}
+                <a href="https://arxiv.org/search/?query={{ author }}&searchtype=author" class="authors">{{ author }}</a>{{ ", " if not loop.last else "." }}
+              {% endfor %}
+              </small>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    {% endfor %}
+  </body>
+</html>

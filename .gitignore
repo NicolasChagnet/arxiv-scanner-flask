@@ -1,0 +1,6 @@
+__pycache__/
+old/
+cache_rss/*
+*.sublime-project
+*.sublime-workspace
+password.txt

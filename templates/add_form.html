@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Add parameters</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style type="text/css">
+      .form-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .form-container form {
+        width: 50%; /* adjust this value to control the form's width */
+      }
+      .form-container label, .form-container input {
+          display: block;
+      }
+
+      .form-container label {
+          margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topnav">
+      <a href="/">Home</a>
+      <a href="/show">Show parameters</a>
+      <a class="active" href="/add">Add parameters</a>
+      <div class="search-container">
+        <form action="/bydate">
+          <!-- <label for="archive">Archive: </label> -->
+          <input type="date" id="archive" name="date">
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+    <div class="form-container">
+      <form action="/add_treat" method="POST">
+        <label for="author">Author: 
+        <input type="text" id="author" name="author"></label>
+        <label for="keyword">Keyword: 
+        <input type="text" id="keyword" name="keyword"></label>
+        <label for="keyword">Password: 
+        <input type="password" id="pass" name="pass"></label>
+        <input type="submit" name="submit" value="Send">
+      </form>
+    </div>
+  </body>
+</html>
