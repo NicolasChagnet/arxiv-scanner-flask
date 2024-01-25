@@ -62,9 +62,9 @@ function highlight_entries(watched_authors, watched_kw)	{
 				}
 			}
 			if (!truestate) {
-				link.style.display = 'none';
+				link.classList.add('hidden')
 			} else {
-				link.style.display = 'list-item';
+				link.classList.remove('hidden')
 			}
 		})
 	}
