@@ -1,66 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="ie=edge">
-		<title>Daily arXiv digest</title>
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-		<script>
-			MathJax = {
-				tex: {
-					inlineMath: [['$', '$'], ['\\(', '\\)']]
-				},
-				svg: {
-					fontCache: 'global'
-				}
-			};
-		</script>
-		<script type="text/javascript" id="MathJax-script" async
-			src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
-		</script>
-		<script src="{{ url_for('static', filename='js/highlight_entries.js') }}"></script>
-		<script type="text/javascript">
-			window.onload = function() {
-				const watched_authors = {{ watched_authors|safe }};
-				const watched_kw = {{ watched_kw|safe }};
-				
-				highlight_entries(watched_authors, watched_kw)
-			}
-		</script>
-	</head>
-	<body>
-		<div class="topnav">
-			<a class="active" href="/">Home</a>
-			<a href="/show">Show parameters</a>
-			<a href="/add">Add parameters</a>
-			<div class="search-container">
-				<form action="/bydate">
-					<!-- <label for="archive">Archive: </label> -->
-					<input type="date" id="archive" name="date">
-					<button type="submit">Submit</button>
-				</form>
-			</div>
-		</div>
-		<h1>arXiv's digest &mdash; {{ data["date"] }}</h1>
-		<strong>Total: </strong> {{data["number_articles"]}} articles <br />
-		Hide updated: <input type="checkbox" id="button_updated" /> &mdash; Hide others: <input type="checkbox" id="button_watched" />
-		{% for topic, content_topic in data["topics"].items() %}
-			<h2>{{topic}}</h2>
-			<ol type="1">
-				{% for item in content_topic %}
-					{% if (not item['duplicate']) %}
-						<li class="{{item['identifier']}}">
-							<small>(<a href="{{item['link_abs']}}">abs</a>, <a href="{{item['link_pdf']}}">pdf</a>)</small> <span>[{{item['identifier']}}]</span> <span class="title"> {{item['title']}} </span> 
-							<small>
-							{% for author in item["authors"] %}
-								<a href="https://arxiv.org/search/?query={{ author }}&searchtype=author" class="authors">{{ author }}</a>{{ ", " if not loop.last else "." }}
-							{% endfor %}
-							</small>
-						</li>
-					{% endif %}
-				{% endfor %}
-			</ol>
-		{% endfor %}
-	</body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Daily arXiv digest</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    <script src="{{ url_for('static', filename='js/highlight_entries.js') }}"></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        const watched_authors = {{ watched_authors|safe }};
+        const watched_kw = {{ watched_kw|safe }};
+        
+        highlight_entries(watched_authors, watched_kw)
+      }
+    </script>
+  </head>
+  <body>
+    <div class="topnav">
+      <a class="active" href="/">Home</a>
+      <a href="/show">Show parameters</a>
+      <a href="/add">Add parameters</a>
+      <div class="search-container">
+        <form action="/bydate">
+          <!-- <label for="archive">Archive: </label> -->
+          <input type="date" id="archive" name="date">
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+    <h1>arXiv's digest &mdash; {{ data["date"] }}</h1>
+    <strong>Total: </strong> {{data["number_articles"]}} articles <br />
+    Hide updated: <input type="checkbox" id="button_updated" /> &mdash; Hide others: <input type="checkbox" id="button_watched" />
+    {% for topic, content_topic in data["topics"].items() %}
+      <h2>{{topic}}</h2>
+      <ol type="1">
+        {% for item in content_topic %}
+          {% if (not item['duplicate']) %}
+            <li class="{{item['identifier']}}">
+              <small>(<a href="{{item['link_abs']}}">abs</a>, <a href="{{item['link_pdf']}}">pdf</a>)</small> <span>[{{item['identifier']}}]</span> <span class="title"> {{item['title']}} </span> 
+              <small>
+              {% for author in item["authors"] %}
+                <a href="https://arxiv.org/search/?query={{ author }}&searchtype=author" class="authors">{{ author }}</a>{{ ", " if not loop.last else "." }}
+              {% endfor %}
+              </small>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    {% endfor %}
+  </body>
 </html>
