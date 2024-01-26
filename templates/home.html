@@ -31,7 +31,7 @@
   </head>
   <body>
     <div class="topnav">
-      <a class="active" href="/">Home</a>
+      <a {% if home_active %}class="active"{% endif %} href="/">Home</a>
       <a href="/show">Show parameters</a>
       <a href="/add">Add parameters</a>
       <div class="search-container">
