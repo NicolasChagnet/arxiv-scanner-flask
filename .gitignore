@@ -4,3 +4,4 @@ cache_rss/*
 *.sublime-project
 *.sublime-workspace
 password.txt
+*.log
