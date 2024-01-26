@@ -166,6 +166,7 @@ def home():
         data=entries,
         watched_authors=parameters["authors"],
         watched_kw=parameters["keywords"],
+        home_active=True,
     )
 
 
@@ -184,6 +185,7 @@ def bydate():
                 data=entries,
                 watched_authors=parameters["authors"],
                 watched_kw=parameters["keywords"],
+                home_active=False,
             )
         else:
             log("Cache file does not exist")
