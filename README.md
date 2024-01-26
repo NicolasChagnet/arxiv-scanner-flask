@@ -2,7 +2,7 @@
 
 This is a minimal Flask app which downloads the RSS feed from selected arXiv categories every day and presents them in a simple static website. It also allows for filtering by keywords, authors and between updated or new submissions.
 
-This project is adapted from [zhuwenxing/daily_arxiv](https://github.com/zhuwenxing/daily_arxiv).
+This project is adapted from a script by [github.com/svaiter](https://gist.githubusercontent.com/svaiter/765107405bcff87b85274f8cb3b659a1/raw/a60f09884eb397e5693ce146bb71fed4c7bd4096/arxiv_scan.py).
 
 # How to use
 
