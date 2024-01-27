@@ -1,19 +1,19 @@
-## Run @ http://arxivscan.pythonanywhere.com
+""" This module can be ran at http://nchagnet.pythonanywhere.com """
 
 from time import strftime
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 import os
 from html import unescape
 import re
+import json
 
 import requests as rq
 import feedparser as fd
 from flask import Flask, request, redirect, url_for, render_template
-import json
 
 
-# Checks whether a string is a date of the correct format
 def validate_date(date_str, dateformat):
+    """Checks whether a string is a date of the correct format"""
     try:
         if date_str != datetime.strptime(date_str, dateformat).strftime(dateformat):
             raise ValueError
@@ -22,21 +22,22 @@ def validate_date(date_str, dateformat):
         return False
 
 
-# Useful log function
 def log(text):
-    with open("arxiv_scanner.log", "a") as f:
+    """ Useful handmade log function """
+    with open("arxiv_scanner.log", "a", encoding="utf-8") as f:
         f.write(f"\n {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}: {text}")
 
 
-LINKREG = r"<a[^>]*>([^<]*)<\/a>"  # Useful regex
+# Useful regex to extract link text from html
+LINKREG = r"<a[^>]*>([^<]*)<\/a>"
 USECACHE = True
 CACHERSSFOLDER = "./cache_rss/"  # Folder where cached rss elements can be found
 # Password to implement minimal security on the addition of new authors/kws
-with open("password.txt", "r") as f:
-    PASSWDADD = f.read()
+with open("password.txt", "r", encoding="utf-8") as file:
+    PASSWDADD = file.read()
 # Loading the various parameters from the .json file
-with open("./parameters.json") as f:
-    parameters = json.loads(f.read())
+with open("./parameters.json", encoding="utf-8") as file:
+    parameters = json.loads(file.read())
 SUBJECTS = parameters["categories"]
 
 
@@ -47,8 +48,10 @@ DATEFORMAT = "%Y-%m-%d"
 DATEFORMATOUT = "%Y%m%d"
 
 
-# This function gets the rss feed for each subject, calls the formatting function on each entry and builds a dictionary with all the necessary info
 def get_rss():
+    """ This function gets the rss feed for each subject, 
+    calls the formatting function on each entry and 
+    builds a dictionary with all the necessary info """
     ret_dict = {
         "date": None,
         "topics": {},
@@ -61,7 +64,7 @@ def get_rss():
     for sub in SUBJECTS:
         # Downloading of RSS feed
         url = f"http://export.arxiv.org/rss/{sub}"
-        r = rq.get(url)
+        r = rq.get(url, timeout=10)
         rss_dict = fd.parse(r.text)
 
         # Extract and count the entries
@@ -72,7 +75,7 @@ def get_rss():
         # entries = list(filter(lambda e: e['title'][-8:-1] != 'UPDATED', entries))
         # Loop over entries formatting them and sorting the resulting list by arXiv identifier
         for e in entries:
-            ret_dict["topics"][sub].append(format_entry_rss(e, sub, ids))
+            ret_dict["topics"][sub].append(format_entry_rss(e, ids))
         ret_dict["topics"][sub] = sorted(
             ret_dict["topics"][sub], key=lambda u: u.get("identifier"), reverse=True
         )
@@ -86,13 +89,13 @@ def get_rss():
     return ret_dict
 
 
-# Extracts the text inside an HTML link <a href=URL>text</a>
 def format_link(link):
+    """ Extracts the text inside an HTML link <a href=URL>text</a> """
     return re.findall(LINKREG, link)
 
 
-# From an entry of the RSS feed, extract useful information about the entry
-def format_entry_rss(e, sub, ids):
+def format_entry_rss(e, ids):
+    """ From an entry of the RSS feed, extract useful information about the entry """
     ret = {}  # Output dict initialization
     # We extract the title, removing useless portions
     title = e["title"].replace("\n ", "")
@@ -106,13 +109,15 @@ def format_entry_rss(e, sub, ids):
     # Extracts the link to the abstract and to the pdf
     ret["link_abs"] = e["link"]
     ret["link_pdf"] = ret["link_abs"].replace("abs", "pdf") + ".pdf"
-    ret["identifier"] = ret["link_abs"][ret["link_abs"].find("abs") + 4 :]
+    ret["identifier"] = ret["link_abs"][ret["link_abs"].find("abs") + 4:]
 
-    # The authors are given as a series of HTML links. This extracts them all from the one string. The "unescape" function is required for accents in names escaped in the RSS feed.
+    # The authors are given as a series of HTML links. This extracts them all from the one string.
+    # The "unescape" function is required for accents in names escaped in the RSS feed.
     ret["authors"] = [
         unescape(author) for author in format_link(e["authors"][0]["name"])
     ]
-    # Checks whether this entry is "duplicate" as in if it is present in more than one category we are watching at a given time. Stores this information using a global dictionary ids.
+    # Checks whether this entry is present in more than one category we are watching at a given time.
+    # Stores this information using a global dictionary ids.
     if ret["identifier"] in ids:
         ret["duplicate"] = True
     else:
@@ -125,33 +130,33 @@ def format_entry_rss(e, sub, ids):
 app = Flask(__name__)
 
 
-# Returns a filename in the cache folder given a date
-def get_filename(date):
-    date_str = date.strftime(DATEFORMAT)
+def get_filename(date_obj):
+    """ Returns a filename in the cache folder given a date """
+    date_str = date_obj.strftime(DATEFORMAT)
     return f"{CACHERSSFOLDER}{date_str}.json"
 
 
-# Gets the day's entries in RSS and writes to files
 def manual_download_rss(filename):
+    """ Gets the day's entries in RSS and writes to files """
     log(f"Manual downloading to {filename}")
     entries = get_rss()
-    with open(filename, "w") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         print(f"Write cache: {filename}")
         json.dump(entries, f)
     return entries
 
 
-# Loads a file from cache **THIS ASSUMES THE FILE EXISTS**
 def load_from_file(filename):
+    """ Loads a file from cache **THIS ASSUMES THE FILE EXISTS** """
     print(f"From cache: {filename}")
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         entries = json.loads(f.read())
     return entries
 
 
-# Routes the home to our home template with the day's RSS feed (either from cache or downloaded)
 @app.route("/")
 def home():
+    """ Routes the home to our home template with the day's RSS feed (either from cache or downloaded) """
     filename = get_filename(date.today())
     if os.path.exists(filename) and USECACHE:
         log("Loading from cache")
@@ -170,10 +175,11 @@ def home():
     )
 
 
-# If a date is given, checks whether a cached RSS exists
 @app.route("/bydate")
 def bydate():
-    date_query_str = request.args.get("date", date.today().strftime(DATEFORMAT))
+    """ If a date is given, checks whether a cached RSS exists """
+    date_query_str = request.args.get(
+        "date", date.today().strftime(DATEFORMAT))
     date_query = datetime.strptime(date_query_str, DATEFORMAT)
     if validate_date(date_query_str, DATEFORMAT):
         filename = get_filename(date_query)
@@ -187,21 +193,23 @@ def bydate():
                 watched_kw=parameters["keywords"],
                 home_active=False,
             )
-        else:
-            log("Cache file does not exist")
-            return render_template("error.html", error="No file for that date!")
-    else:
-        log("Invalid date format requested")
-        return render_template("error.html", error="Invalid date!")
+
+        log("Cache file does not exist")
+        return render_template("error.html", error="No file for that date!")
+
+    log("Invalid date format requested")
+    return render_template("error.html", error="Invalid date!")
 
 
 @app.route("/add")
 def show_add():
+    """ Returns form page to add parameter """
     return render_template("add_form.html")
 
 
 @app.route("/add_treat", methods=["POST"])
 def treat_add():
+    """ Adds new parameter to the dictionary and writes to file """
     new_author = request.form["author"]
     new_kw = request.form["keyword"]
     passwd = request.form["pass"]
@@ -219,7 +227,7 @@ def treat_add():
         changed = True
     if changed:
         log("Saving new parameters to file")
-        with open("./parameters.json", "w") as f:
+        with open("./parameters.json", "w", encoding="utf-8") as f:
             json.dump(parameters, f)
 
     return redirect(url_for("show_add"), code=302)
@@ -227,6 +235,7 @@ def treat_add():
 
 @app.route("/show")
 def show_params():
+    """ Returns page showing parameters """
     return render_template(
         "show_parameters.html",
         watched_authors=parameters["authors"],
