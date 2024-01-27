@@ -49,8 +49,8 @@ DATEFORMATOUT = "%Y%m%d"
 
 
 def get_rss():
-    """ This function gets the rss feed for each subject, 
-    calls the formatting function on each entry and 
+    """ This function gets the rss feed for each subject,
+    calls the formatting function on each entry and
     builds a dictionary with all the necessary info """
     ret_dict = {
         "date": None,
@@ -68,21 +68,25 @@ def get_rss():
         rss_dict = fd.parse(r.text)
 
         # Extract and count the entries
-        entries = rss_dict["entries"]
+        entries = rss_dict.get("entries", [])
         nentries += len(entries)
         ret_dict["topics"][sub] = []
+
         # Uncomment the following line if you want to completely remove the updated entries
         # entries = list(filter(lambda e: e['title'][-8:-1] != 'UPDATED', entries))
+
         # Loop over entries formatting them and sorting the resulting list by arXiv identifier
         for e in entries:
             ret_dict["topics"][sub].append(format_entry_rss(e, ids))
+
         ret_dict["topics"][sub] = sorted(
             ret_dict["topics"][sub], key=lambda u: u.get("identifier"), reverse=True
         )
 
     # Finishes packaging the output dictionary
     ret_dict["number_articles"] = nentries
-    d = rss_dict["feed"]["updated_parsed"]
+    d = rss_dict.get("feed", {}).get("updated_parsed",
+                                     date.today().strftime(DATEFORMAT))
     d_f = strftime(DATEFORMAT, d)
     ret_dict["date"] = d_f
 
@@ -94,13 +98,34 @@ def format_link(link):
     return re.findall(LINKREG, link)
 
 
+def treat_title(title):
+    """ Removes extra bits from a title (str) """
+    title_replaced = title.replace("\n ", "")
+    pos_arxiv = title_replaced.find("arXiv:")
+    if pos_arxiv == -1:
+        title_truncated = title_replaced
+    elif pos_arxiv == 0:
+        title_truncated = ''
+    else:
+        title_truncated = title_replaced[:pos_arxiv - 1]
+    return title_truncated.strip()
+
+
+def extract_identifier(link):
+    """ Extracts the arXiv identifier from its link """
+    pos_abs = link.find("abs")
+    if pos_abs == -1 or pos_abs + 4 >= len(link):
+        return ""
+    return link[pos_abs + 4:]
+
+
 def format_entry_rss(e, ids):
     """ From an entry of the RSS feed, extract useful information about the entry """
     ret = {}  # Output dict initialization
+
     # We extract the title, removing useless portions
-    title = e["title"].replace("\n ", "")
-    inull = e["title"].find("arXiv:") - 2
-    ret["title"] = title[:inull]
+    ret["title"] = treat_title(e.get("title", []))
+
     # If the entry corresponds to an update, adds the proper postfix to our shortened title
     ret["updated"] = title.find("UPDATED") > -1
     if ret["updated"]:
@@ -109,7 +134,7 @@ def format_entry_rss(e, ids):
     # Extracts the link to the abstract and to the pdf
     ret["link_abs"] = e["link"]
     ret["link_pdf"] = ret["link_abs"].replace("abs", "pdf") + ".pdf"
-    ret["identifier"] = ret["link_abs"][ret["link_abs"].find("abs") + 4:]
+    ret["identifier"] = extract_identifier(ret["link_abs"])
 
     # The authors are given as a series of HTML links. This extracts them all from the one string.
     # The "unescape" function is required for accents in names escaped in the RSS feed.
@@ -154,7 +179,7 @@ def load_from_file(filename):
     return entries
 
 
-@app.route("/")
+@ app.route("/")
 def home():
     """ Routes the home to our home template with the day's RSS feed (either from cache or downloaded) """
     filename = get_filename(date.today())
@@ -175,7 +200,7 @@ def home():
     )
 
 
-@app.route("/bydate")
+@ app.route("/bydate")
 def bydate():
     """ If a date is given, checks whether a cached RSS exists """
     date_query_str = request.args.get(
@@ -201,13 +226,13 @@ def bydate():
     return render_template("error.html", error="Invalid date!")
 
 
-@app.route("/add")
+@ app.route("/add")
 def show_add():
     """ Returns form page to add parameter """
     return render_template("add_form.html")
 
 
-@app.route("/add_treat", methods=["POST"])
+@ app.route("/add_treat", methods=["POST"])
 def treat_add():
     """ Adds new parameter to the dictionary and writes to file """
     new_author = request.form["author"]
@@ -233,7 +258,7 @@ def treat_add():
     return redirect(url_for("show_add"), code=302)
 
 
-@app.route("/show")
+@ app.route("/show")
 def show_params():
     """ Returns page showing parameters """
     return render_template(
