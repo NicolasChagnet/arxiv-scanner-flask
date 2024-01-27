@@ -151,10 +151,6 @@ def format_entry_rss(e, ids):
     return ret
 
 
-# Server app
-app = Flask(__name__)
-
-
 def get_filename(date_obj):
     """ Returns a filename in the cache folder given a date """
     date_str = date_obj.strftime(DATEFORMAT)
@@ -179,7 +175,11 @@ def load_from_file(filename):
     return entries
 
 
-@ app.route("/")
+# Server app
+app = Flask(__name__)
+
+
+@app.route("/")
 def home():
     """ Routes the home to our home template with the day's RSS feed (either from cache or downloaded) """
     filename = get_filename(date.today())
@@ -200,7 +200,7 @@ def home():
     )
 
 
-@ app.route("/bydate")
+@app.route("/bydate")
 def bydate():
     """ If a date is given, checks whether a cached RSS exists """
     date_query_str = request.args.get(
@@ -226,13 +226,13 @@ def bydate():
     return render_template("error.html", error="Invalid date!")
 
 
-@ app.route("/add")
+@app.route("/add")
 def show_add():
     """ Returns form page to add parameter """
     return render_template("add_form.html")
 
 
-@ app.route("/add_treat", methods=["POST"])
+@app.route("/add_treat", methods=["POST"])
 def treat_add():
     """ Adds new parameter to the dictionary and writes to file """
     new_author = request.form["author"]
@@ -258,7 +258,7 @@ def treat_add():
     return redirect(url_for("show_add"), code=302)
 
 
-@ app.route("/show")
+@app.route("/show")
 def show_params():
     """ Returns page showing parameters """
     return render_template(
