@@ -127,7 +127,7 @@ def format_entry_rss(e, ids):
     ret["title"] = treat_title(e.get("title", []))
 
     # If the entry corresponds to an update, adds the proper postfix to our shortened title
-    ret["updated"] = title.find("UPDATED") > -1
+    ret["updated"] = ret["title"].find("UPDATED") > -1
     if ret["updated"]:
         ret["title"] += " [UPDATED]"
 
