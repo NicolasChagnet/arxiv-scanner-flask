@@ -31,7 +31,8 @@ def test_format_link(link, expected_result):
     ("Some paper", "Some paper"),
     ("Some paper arXiv:2401.00000", "Some paper"),
     ("arXiv:2333.0000", ""),
-    ("Some paper about arXiv papers arXiv:2401.0000", "Some paper about arXiv papers")
+    ("Some paper about arXiv papers arXiv:2401.0000",
+     "Some paper about arXiv papers")
 ])
 def test_treat_title(title, expected_result):
     """ Tests various HTML links """

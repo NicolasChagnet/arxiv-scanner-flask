@@ -7,7 +7,7 @@ This project is adapted from a script by [github.com/svaiter](https://gist.githu
 # How to use
 
 The simplest way to spin this is to use [https://pythonanywhere.com](https://pythonanywhere.com). First make an account (the free tier is enough for this app) and follow these steps:
-	
+    
 - Download the contents of this repository. Create a file `password.txt` whose sole content is a password you wish to use to secure the parameters page. Edit the `parameters.json` to match your interests in authors and keywords.
 - Create a new web app, choosing the Flask option. This is so the routing is all set-up by the system.
 - Copy the contents of `flask_app.py` in the same file on the web app. Upload the other files and folders manually.
