@@ -6,3 +6,4 @@ cache_rss/*
 password.txt
 *.log
 pyrightconfig.json
+.pytest_cache
