@@ -5,3 +5,4 @@ cache_rss/*
 *.sublime-workspace
 password.txt
 *.log
+pyrightconfig.json
