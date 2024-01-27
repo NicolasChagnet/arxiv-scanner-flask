@@ -180,8 +180,8 @@ def bydate():
     """ If a date is given, checks whether a cached RSS exists """
     date_query_str = request.args.get(
         "date", date.today().strftime(DATEFORMAT))
-    date_query = datetime.strptime(date_query_str, DATEFORMAT)
     if validate_date(date_query_str, DATEFORMAT):
+        date_query = datetime.strptime(date_query_str, DATEFORMAT)
         filename = get_filename(date_query)
         if os.path.exists(filename):
             log("Loading from cache")
