@@ -59,7 +59,8 @@ def get_rss():
     }  # Format of the return dictionary
     ids = {}
     nentries = 0
-
+    rss_dict = {}
+    
     # Loop over each arXiv categories
     for sub in SUBJECTS:
         # Downloading of RSS feed
