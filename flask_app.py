@@ -67,7 +67,7 @@ def get_rss():
         # Initialization
         ret_dict["topics"][sub] = []
         # Downloading of RSS feed
-        url = f"http://export.arxiv.org/rss/{sub}"
+        url = f"http://rss.arxiv.org/rss/{sub}"
         try:
             r = rq.get(url, timeout=10)
             r.raise_for_status() 
