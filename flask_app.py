@@ -48,6 +48,7 @@ DATEFORMAT = "%Y-%m-%d"
 DATEFORMATOUT = "%Y%m%d"
 
 
+
 def get_rss():
     """ This function gets the rss feed for each subject,
     calls the formatting function on each entry and
@@ -63,15 +64,24 @@ def get_rss():
     
     # Loop over each arXiv categories
     for sub in SUBJECTS:
+        # Initialization
+        ret_dict["topics"][sub] = []
         # Downloading of RSS feed
         url = f"http://export.arxiv.org/rss/{sub}"
-        r = rq.get(url, timeout=10)
+        try:
+            r = rq.get(url, timeout=10)
+            r.raise_for_status() 
+        except rq.exceptions.HTTPError as errh:
+            log(errh.args[0])
+            continue
+
         rss_dict = fd.parse(r.text)
+
+        print(rss_dict)
 
         # Extract and count the entries
         entries = rss_dict.get("entries", [])
         nentries += len(entries)
-        ret_dict["topics"][sub] = []
 
         # Uncomment the following line if you want to completely remove the updated entries
         # entries = list(filter(lambda e: e['title'][-8:-1] != 'UPDATED', entries))
