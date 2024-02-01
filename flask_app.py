@@ -77,8 +77,6 @@ def get_rss():
 
         rss_dict = fd.parse(r.text)
 
-        print(rss_dict)
-
         # Extract and count the entries
         entries = rss_dict.get("entries", [])
         nentries += len(entries)
