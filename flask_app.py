@@ -31,7 +31,7 @@ def log(text):
 
 # Useful regex to extract link text from html
 LINKREG = r"<a[^>]*>([^<]*)<\/a>"
-USECACHE = False
+USECACHE = True
 CACHERSSFOLDER = "./cache_rss/"  # Folder where cached rss elements can be found
 # Password to implement minimal security on the addition of new authors/kws
 with open("password.txt", "r", encoding="utf-8") as file:
