@@ -6,6 +6,7 @@ import os
 from html import unescape
 import re
 import json
+from pylatexenc.latex2text import LatexNodes2Text
 
 import requests as rq
 import feedparser as fd
@@ -30,7 +31,7 @@ def log(text):
 
 # Useful regex to extract link text from html
 LINKREG = r"<a[^>]*>([^<]*)<\/a>"
-USECACHE = True
+USECACHE = False
 CACHERSSFOLDER = "./cache_rss/"  # Folder where cached rss elements can be found
 # Password to implement minimal security on the addition of new authors/kws
 with open("password.txt", "r", encoding="utf-8") as file:
@@ -76,7 +77,6 @@ def get_rss():
             continue
 
         rss_dict = fd.parse(r.text)
-
         # Extract and count the entries
         entries = rss_dict.get("entries", [])
         nentries += len(entries)
@@ -136,19 +136,19 @@ def format_entry_rss(e, ids):
     ret["title"] = treat_title(e.get("title", []))
 
     # If the entry corresponds to an update, adds the proper postfix to our shortened title
-    ret["updated"] = ret["title"].find("UPDATED") > -1
+    ret["updated"] = e["arxiv_announce_type"] in ["replace", "replace-cross"]
     if ret["updated"]:
         ret["title"] += " [UPDATED]"
-
     # Extracts the link to the abstract and to the pdf
-    ret["link_abs"] = e["link"]
+    link_raw = e.get("link", "")
+    ret["link_abs"] = link_raw.replace("rss.", "")
     ret["link_pdf"] = ret["link_abs"].replace("abs", "pdf") + ".pdf"
     ret["identifier"] = extract_identifier(ret["link_abs"])
-
     # The authors are given as a series of HTML links. This extracts them all from the one string.
     # The "unescape" function is required for accents in names escaped in the RSS feed.
     ret["authors"] = [
-        unescape(author) for author in format_link(e["authors"][0]["name"])
+        # unescape(author) for author in format_link(e["authors"][0]["name"])
+        LatexNodes2Text().latex_to_text(author.strip()) for author in e["authors"][0]["name"].split("\n")
     ]
     # Checks whether this entry is present in more than one category we are watching at a given time.
     # Stores this information using a global dictionary ids.
